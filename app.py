@@ -354,15 +354,7 @@ st.markdown(
 st.markdown("<div class='quote-box'>\"Céad Míle Fáilte\" - A hundred thousand welcomes. Charting your pathway to the Emerald Isle.</div>", unsafe_allow_html=True)
 
 df = get_production_dataset()
-# Inject the pure floating HTML text anchor cleanly if the file is generated
-if os.path.exists(MASTER_FILE):
-    st.markdown(f"""
-        <div class="floating-download">
-            <a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{master_base64}" download="Visa_Decision_Comparison_Report.xlsx">
-                Download Master Report
-            </a>
-        </div>
-    """, unsafe_allow_html=True)
+
 if df is not None and not df.empty:
     with st.form(key="search_form"):
         search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g., 12345678").strip()
@@ -383,7 +375,15 @@ if df is not None and not df.empty:
                 st.error(f"🚨 **Status: Refused**\n\nYour application has been returned with a refusal decision. Please coordinate directly with your visa processing handler.")
         else:
             st.warning("⚠️ No current record found matching that Application Number in today's batch updates.")
-            
+    # Inject the pure floating HTML text anchor cleanly if the file is generated
+if os.path.exists(MASTER_FILE):
+    st.markdown(f"""
+        <div class="floating-download">
+            <a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{master_base64}" download="Visa_Decision_Comparison_Report.xlsx">
+                Download Master Report
+            </a>
+        </div>
+    """, unsafe_allow_html=True)        
     st.markdown("---")
     last_update_ts = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d %I:%M %p")
     st.caption(f"System Operational Ledger Cache Sync Frame: {last_update_ts}")
