@@ -139,14 +139,12 @@ def download_and_convert_production(today_str):
             filename_stamp = f"{today_str.replace('-', '')}_NDVO_Visa_Decisions.ods"
             update_master_report(cleaned_map, today_str, filename_stamp)
             
-            # Clear internal cache so memory updates immediately with the new file records
             load_cached_json.clear()
             return True
         except Exception:
             pass
     return False
 
-# High-speed in-memory data engine layer
 @st.cache_data(show_spinner=False)
 def load_cached_json():
     if os.path.exists(JSON_FILE):
@@ -154,16 +152,14 @@ def load_cached_json():
             return pd.DataFrame(json.load(f))
     return None
 
-# --- PROCESS PIPELINE & FORCED LOADER INITIALIZATION ---
+# --- CRITICAL AUTOMATED 11:05 AM DAILY BACKEND PROCESS PIPELINE ---
 now = datetime.now()
 today_str = now.strftime("%Y-%m-%d")
 
-# Check absolute condition criteria for the morning 11:05 AM window loop sync execution
 sync_needed = False
 if not os.path.exists(JSON_FILE):
     sync_needed = True
 elif now.time() >= time(11, 5):
-    # If the file on disk is older than today or the current session hasn't synced yet today
     if st.session_state.last_sync_date != today_str:
         file_date = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d")
         if file_date != today_str:
@@ -175,14 +171,11 @@ if sync_needed:
         success = download_and_convert_production(today_str)
         if success:
             st.session_state.last_sync_date = today_str
-            
-        # Hold loader window display configuration for a clean 5 seconds user perception framework
         elapsed = ptime.time() - start_time
         remaining = 5.0 - elapsed
         if remaining > 0:
             ptime.sleep(remaining)
 
-# High-speed data assignment via memory layout arrays
 df = load_cached_json()
 
 def get_base64_image(image_path):
@@ -298,7 +291,7 @@ st.markdown(f"""
         line-height: 1.6;
     }}
     
-    button {{
+    div.stButton > button:first-child {{
         background: linear-gradient(135deg, #007A4E 0%, #00b371 100%) !important;
         color: white !important;
         border-radius: 6px;
@@ -313,7 +306,7 @@ st.markdown(f"""
         cursor: pointer;
     }}
     
-    button:hover {{
+    div.stButton > button:first-child:hover {{
         transform: translateY(-2px);
         background: linear-gradient(135deg, #FF883E 0%, #ffaa6b 100%) !important;
         box-shadow: 0 8px 20px rgba(255, 136, 62, 0.4);
@@ -348,12 +341,17 @@ if os.path.exists(MASTER_FILE) and master_base64:
     """, unsafe_allow_html=True)
 
 if df is not None and not df.empty:
-    with st.form(key="search_form"):
-        search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g., 12345678").strip()
-        submit_button = st.form_submit_button(label="Verify Application Status")
+    # REMOVED st.form FOR DYNAMIC REACTION: Standard elements let us intercept clicks with live button spinners
+    search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g., 12345678").strip()
+    submit_button = st.button(label="Verify Application Status")
 
     if submit_button and search_query:
-        match = df[df["application_number"] == search_query]
+        # Launching targeted reactive loader animation directly tied to processing click
+        with st.spinner("⏳ Analyzing data registries..."):
+            # Instantaneous memory lookups take 0.001s, matching custom sleep parameters for visual loading flow
+            ptime.sleep(1.2)
+            match = df[df["application_number"] == search_query]
+            
         if not match.empty:
             app_id = str(match["application_number"].values[0])
             status = str(match["decision_status"].values[0]).strip()
