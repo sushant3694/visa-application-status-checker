@@ -7,11 +7,11 @@ import urllib3
 import json
 import re
 import base64
-import time as ptime
 from datetime import datetime, time
 
 # Suppress insecure request warnings from using verify=False
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 TARGET_URL = "https://www.ireland.ie/en/india/newdelhi/services/visas/processing-times-and-decisions/#visa-decisions"
 LOCAL_FILE = "visa_decisions_latest.ods"
@@ -31,11 +31,187 @@ st.set_page_config(
     layout="centered"
 )
 
-# Initialize session tracking states
-if "last_sync_date" not in st.session_state:
-    st.session_state.last_sync_date = None
-if "app_loaded" not in st.session_state:
-    st.session_state.app_loaded = False
+def get_base64_image(image_path):
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    return ""
+
+img_base64 = get_base64_image("background.avif")
+
+# Safely encode the master excel report for the floating download layout link if it exists
+def get_base64_file(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return ""
+
+master_base64 = get_base64_file(MASTER_FILE)
+
+# Advanced UI injection: Floating anchors, clean fonts, global layout resets
+st.markdown(f"""
+    <!-- Import Plus Jakarta Sans from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+    <style>
+    /* Absolute Global Font Override */
+    html, body, .stApp, div, span, p, h1, h2, h3, label, input, button, textarea, th, td {{
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }}
+    
+    @keyframes fadeInPage {{
+        from {{ opacity: 0; transform: translateY(15px); }}
+        to {{ opacity: 1; transform: translateY(0); }}
+    }}
+    
+    .stApp {{
+        background: linear-gradient(rgba(23, 23, 23, 0.92), rgba(0, 0, 0, 0.92)), 
+                    url("data:image/avif;base64,{img_base64}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        animation: fadeInPage 0.8s ease-out forwards;
+    }}
+    
+    /* Default Desktop Layout Settings */
+    .block-container {{
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+        position: relative;
+    }}
+    
+    h1 {{
+        color: #007A4E !important;
+        font-weight: 800;
+        text-align: center;
+        letter-spacing: -0.5px;
+        font-size: 2.5rem;
+        margin-bottom: 5px !important;
+    }}
+
+    h1 span:nth-of-type(2) {{
+        display: none !important;
+        visibility: hidden !important;
+    }}
+
+    header, #MainMenu, .stAppHeader {{
+        visibility: hidden !important;
+        display: none !important;
+    }}
+
+    /* TARGETS AND ELIMINATES THE STREAMLIT CLOUD DEPLOY LINK */
+    a[href^="https://streamlit.io/cloud"], 
+    a[href*="streamlit.io"], 
+    .stAppDeployDropdown {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        width: 0 !important;
+        position: absolute !important;
+        pointer-events: none !important;
+    }}
+
+    iframe {{
+        position: absolute !important;
+        z-index:9999999999999999 !important;
+    }}
+    
+    .branding-subheading {{
+        text-align: center;
+        margin-top: 0px;
+        margin-bottom: 20px;
+        font-size: 1rem;
+        color: #fff;
+        font-weight: 500;
+    }}
+    
+    .branding-subheading a, .floating-download a {{
+        color: #007A4E !important;
+        text-decoration: none;
+        font-weight: 700;
+        transition: color 0.3s ease;
+    }}
+    
+    .branding-subheading a:hover, .floating-download a:hover {{
+        color: #FF883E !important;
+        text-decoration: underline;
+    }}
+    
+    /* Floating Link Top Right Setup Layer */
+    .floating-download {{
+        text-align:right;
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }}
+    
+    .quote-box {{
+        text-align: center;
+        font-style: italic;
+        color: #fff;
+        margin-bottom: 25px;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }}
+    
+    /* Catchy Modern Tech-Style Button Framework */
+    button {{
+        background: linear-gradient(135deg, #007A4E 0%, #00b371 100%) !important;
+        color: white !important;
+        border-radius: 6px;
+        width: 100%;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+        border: none;
+        padding: 12px;
+        box-shadow: 0 4px 6px rgba(0, 122, 78, 0.2);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        cursor: pointer;
+    }}
+    
+    button:hover {{
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #FF883E 0%, #ffaa6b 100%) !important;
+        box-shadow: 0 8px 20px rgba(255, 136, 62, 0.4);
+    }}
+
+    /* Mobile & Tablet Responsive Layouts with Roomy Padding Configuration */
+    @media (max-width: 768px) {{
+        .block-container {{
+            padding-left: 1.5rem !important;  /* Added extra cushion space to avoid crunching */
+            padding-right: 1.5rem !important;
+            padding-top: 4.5rem !important; /* Made space for the floating right link layer above the title */
+        }}
+        
+        .floating-download {{
+            top: 15px;
+            right: 1.5rem;
+            width: 100%;
+            text-align: right;
+        }}
+        
+        h1 {{
+            font-size: 1.65rem !important;
+            line-height: 1.3 !important;
+        }}
+        
+        .branding-subheading {{
+            font-size: 0.85rem !important;
+        }}
+        
+        .quote-box {{
+            font-size: 0.95rem !important;
+            margin-bottom: 15px;
+        }}
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
+
 
 def fetch_latest_ods_url():
     try:
@@ -51,6 +227,7 @@ def fetch_latest_ods_url():
     return None
 
 def update_master_report(current_records, report_date, filename):
+    """Executes the standard chronological dataset delta update matching algorithms[cite: 3]."""
     if os.path.exists(MASTER_FILE):
         all_apps = pd.read_excel(MASTER_FILE, sheet_name="All Applications").astype(str)
         records_by_date = pd.read_excel(MASTER_FILE, sheet_name="New Records By Date").astype(str)
@@ -140,226 +317,52 @@ def download_and_convert_production(today_str):
 
             filename_stamp = f"{today_str.replace('-', '')}_NDVO_Visa_Decisions.ods"
             update_master_report(cleaned_map, today_str, filename_stamp)
-            
-            load_cached_json.clear()
             return True
         except Exception:
             pass
     return False
 
-@st.cache_data(show_spinner=False)
-def load_cached_json():
+def get_production_dataset():
+    now = datetime.now()
+    today_str = now.strftime("%Y-%m-%d")
+    if not os.path.exists(JSON_FILE) or (now.time() >= time(11, 5) and datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d") != today_str):
+        with st.spinner("✨ Synchronizing processing ledgers..."):
+            download_and_convert_production(today_str)
+            
     if os.path.exists(JSON_FILE):
         with open(JSON_FILE, 'r', encoding='utf-8') as f:
             return pd.DataFrame(json.load(f))
     return None
 
-# --- FIX: FORCED RENDER LOADER PLATFORM ROUTE ---
-now = datetime.now()
-today_str = now.strftime("%Y-%m-%d")
+# --- UI Header Content ---
+st.markdown(
+    """
+    <h1 style='margin-bottom: 0px;'>Ireland Visa Status Tracking
+    </h1>
+    """, 
+    unsafe_allow_html=True
+)
 
-if not st.session_state.app_loaded:
-    # Use empty space placeholder container to block DOM caching
-    placeholder = st.empty()
-    with placeholder.container():
-        with st.spinner("✨ Synchronizing processing ledgers and master data calculations..."):
-            start_time = ptime.time()
-            
-            sync_needed = not os.path.exists(JSON_FILE)
-            if not sync_needed and now.time() >= time(11, 5):
-                if st.session_state.last_sync_date != today_str:
-                    file_date = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d")
-                    if file_date != today_str:
-                        sync_needed = True
+st.markdown(
+    """
+    <div class='branding-subheading'>
+        Built with precision by <a href='https://www.sushantthorat.com/' target='_blank'> Sushant Thorat</a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-            if sync_needed:
-                success = download_and_convert_production(today_str)
-                if success:
-                    st.session_state.last_sync_date = today_str
-
-            elapsed = ptime.time() - start_time
-            remaining = 5.0 - elapsed
-            if remaining > 0:
-                ptime.sleep(remaining)
-                
-    placeholder.empty() # Explicitly wipes out the loader container block
-    st.session_state.app_loaded = True
-    st.rerun()
-
-df = load_cached_json()
-
-def get_base64_image(image_path):
-    if os.path.exists(image_path):
-        with open(image_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-    return ""
-
-img_base64 = get_base64_image("background.avif")
-
-def get_base64_file(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, "rb") as f:
-            return base64.b64encode(f.read()).decode()
-    return ""
-
-master_base64 = get_base64_file(MASTER_FILE)
-
-# Advanced UI style injections
-st.markdown(f"""
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
-
-    <style>
-    *, html, body, .stApp, div, span, p, h1, h2, h3, label, input, button, textarea, th, td {{
-        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-    }}
-    
-    @keyframes fadeInPage {{
-        from {{ opacity: 0; transform: translateY(15px); }}
-        to {{ opacity: 1; transform: translateY(0); }}
-    }}
-    
-    .stApp {{
-        background: linear-gradient(rgba(23, 23, 23, 0.92), rgba(0, 0, 0, 0.92)), 
-                    url("data:image/avif;base64,{img_base64}");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        animation: fadeInPage 0.8s ease-out forwards;
-    }}
-    
-    .block-container {{
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
-        position: relative;
-    }}
-    
-    h1 {{
-        color: #007A4E !important;
-        font-weight: 800;
-        text-align: center;
-        letter-spacing: -0.5px;
-        font-size: 2.5rem;
-        margin-bottom: 5px !important;
-    }}
-
-    h1 span:nth-of-type(2) {{
-        display: none !important;
-        visibility: hidden !important;
-    }}
-
-    header, #MainMenu, .stAppHeader {{
-        visibility: hidden !important;
-        display: none !important;
-    }}
-
-    a[href^="https://streamlit.io/cloud"], a[href*="streamlit.io"], .stAppDeployDropdown {{
-        display: none !important;
-        visibility: hidden !important;
-    }}
-
-    iframe {{
-        position: absolute !important;
-        z-index:9999999999999999 !important;
-    }}
-    
-    .branding-subheading {{
-        text-align: center;
-        margin-top: 0px;
-        margin-bottom: 20px;
-        font-size: 1rem;
-        color: #fff;
-        font-weight: 500;
-    }}
-    
-    .branding-subheading a, .floating-download a {{
-        color: #007A4E !important;
-        text-decoration: none;
-        font-weight: 700;
-        transition: color 0.3s ease;
-    }}
-    
-    .branding-subheading a:hover, .floating-download a:hover {{
-        color: #FF883E !important;
-        text-decoration: underline;
-    }}
-    
-    .floating-download {{
-        text-align:right;
-        font-size: 0.95rem;
-        font-weight: 700;
-        margin-bottom: 10px;
-    }}
-    
-    .quote-box {{
-        text-align: center;
-        font-style: italic;
-        color: #fff;
-        margin-bottom: 25px;
-        font-size: 1.1rem;
-        line-height: 1.6;
-    }}
-    
-    div.stButton > button:first-child {{
-        background: linear-gradient(135deg, #007A4E 0%, #00b371 100%) !important;
-        color: white !important;
-        border-radius: 6px;
-        width: 100%;
-        font-weight: 700;
-        font-size: 1rem;
-        letter-spacing: 0.5px;
-        border: none;
-        padding: 12px;
-        box-shadow: 0 4px 6px rgba(0, 122, 78, 0.2);
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        cursor: pointer;
-    }}
-    
-    div.stButton > button:first-child:hover {{
-        transform: translateY(-2px);
-        background: linear-gradient(135deg, #FF883E 0%, #ffaa6b 100%) !important;
-        box-shadow: 0 8px 20px rgba(255, 136, 62, 0.4);
-    }}
-
-    @media (max-width: 768px) {{
-        .block-container {{
-            padding-left: 1.5rem !important;
-            padding-right: 1.5rem !important;
-            padding-top: 4.5rem !important;
-        }}
-        .floating-download {{ top: 15px; right: 1.5rem; width: 100%; text-align: right; }}
-        h1 {{ font-size: 1.65rem !important; line-height: 1.3 !important; }}
-        .branding-subheading {{ font-size: 0.85rem !important; }}
-        .quote-box {{ font-size: 0.95rem !important; }}
-    }}
-    </style>
-""", unsafe_allow_html=True)
-
-# --- RENDERING UI VIEWS ---
-st.markdown("<h1 style='margin-bottom: 0px;'>Ireland Visa Application Tracking</h1>", unsafe_allow_html=True)
-st.markdown("<div class='branding-subheading'>Built with precision by <a href='https://www.sushantthorat.com/' target='_blank'> Sushant Thorat</a></div>", unsafe_allow_html=True)
 st.markdown("<div class='quote-box'>\"Céad Míle Fáilte\" - A hundred thousand welcomes. Charting your pathway to the Emerald Isle.</div>", unsafe_allow_html=True)
 
-if os.path.exists(MASTER_FILE) and master_base64:
-    st.markdown(f"""
-        <div class="floating-download">
-            <a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{master_base64}" download="Visa_Decision_Comparison_Report.xlsx">
-                Download Master Report
-            </a>
-        </div>
-    """, unsafe_allow_html=True)
+df = get_production_dataset()
 
 if df is not None and not df.empty:
-    search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g., 12345678").strip()
-    submit_button = st.button(label="Verify Application Status")
+    with st.form(key="search_form"):
+        search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g. 12345678").strip()
+        submit_button = st.form_submit_button(label="Verify Application Status")
 
     if submit_button and search_query:
-        # Spinner frame container for input entries
-        with st.spinner("⏳ Analyzing data registries..."):
-            ptime.sleep(1.2)
-            match = df[df["application_number"] == search_query]
-            
+        match = df[df["application_number"] == search_query]
         if not match.empty:
             app_id = str(match["application_number"].values[0])
             status = str(match["decision_status"].values[0]).strip()
@@ -373,7 +376,15 @@ if df is not None and not df.empty:
                 st.error(f"🚨 **Status: Refused**\n\nYour application has been returned with a refusal decision. Please coordinate directly with your visa processing handler.")
         else:
             st.warning("⚠️ No current record found matching that Application Number in today's batch updates.")
-            
+    # Inject the pure floating HTML text anchor cleanly if the file is generated
+if os.path.exists(MASTER_FILE):
+    st.markdown(f"""
+        <div class="floating-download">
+            <a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{master_base64}" download="Visa_Decision_Comparison_Report.xlsx">
+                Download Master Report
+            </a>
+        </div>
+    """, unsafe_allow_html=True)        
     st.markdown("---")
     last_update_ts = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d %I:%M %p")
     st.caption(f"System Operational Ledger Cache Sync Frame: {last_update_ts}")
