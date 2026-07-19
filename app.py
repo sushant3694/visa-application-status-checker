@@ -157,7 +157,7 @@ st.markdown(f"""
     }}
     
     /* Catchy Modern Tech-Style Button Framework */
-    div.stButton > button:first-child {{
+    button {{
         background: linear-gradient(135deg, #007A4E 0%, #00b371 100%) !important;
         color: white !important;
         border-radius: 6px;
@@ -172,7 +172,7 @@ st.markdown(f"""
         cursor: pointer;
     }}
     
-    div.stButton > button:first-child:hover {{
+    button:hover {{
         transform: translateY(-2px);
         background: linear-gradient(135deg, #FF883E 0%, #ffaa6b 100%) !important;
         box-shadow: 0 8px 20px rgba(255, 136, 62, 0.4);
