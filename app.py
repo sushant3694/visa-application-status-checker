@@ -31,9 +31,11 @@ st.set_page_config(
     layout="centered"
 )
 
-# Initialize deep session control tracking flags
+# Initialize deep session control tracking flags for cloud routing framework
 if "last_sync_date" not in st.session_state:
     st.session_state.last_sync_date = None
+if "app_loaded" not in st.session_state:
+    st.session_state.app_loaded = False
 
 def fetch_latest_ods_url():
     try:
@@ -152,29 +154,36 @@ def load_cached_json():
             return pd.DataFrame(json.load(f))
     return None
 
-# --- CRITICAL AUTOMATED 11:05 AM DAILY BACKEND PROCESS PIPELINE ---
+# --- STREAMLIT CLOUD GUARANTEED BOOT LOADER ---
 now = datetime.now()
 today_str = now.strftime("%Y-%m-%d")
 
-sync_needed = False
-if not os.path.exists(JSON_FILE):
-    sync_needed = True
-elif now.time() >= time(11, 5):
-    if st.session_state.last_sync_date != today_str:
-        file_date = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d")
-        if file_date != today_str:
-            sync_needed = True
-
-if sync_needed:
+# Forces the cloud platform container to render a clean visual loader window space
+if not st.session_state.app_loaded:
     with st.spinner("✨ Synchronizing processing ledgers and master data calculations..."):
         start_time = ptime.time()
-        success = download_and_convert_production(today_str)
-        if success:
-            st.session_state.last_sync_date = today_str
+        
+        # Check condition rules for the morning 11:05 AM sync window
+        sync_needed = not os.path.exists(JSON_FILE)
+        if not sync_needed and now.time() >= time(11, 5):
+            if st.session_state.last_sync_date != today_str:
+                file_date = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d")
+                if file_date != today_str:
+                    sync_needed = True
+
+        if sync_needed:
+            success = download_and_convert_production(today_str)
+            if success:
+                st.session_state.last_sync_date = today_str
+
+        # Enforce the specific loading window to ensure cloud visualization draws correctly
         elapsed = ptime.time() - start_time
         remaining = 5.0 - elapsed
         if remaining > 0:
             ptime.sleep(remaining)
+            
+    st.session_state.app_loaded = True
+    st.rerun()
 
 df = load_cached_json()
 
@@ -194,7 +203,7 @@ def get_base64_file(file_path):
 
 master_base64 = get_base64_file(MASTER_FILE)
 
-# Advanced UI style injections[cite: 2]
+# Advanced UI style injections
 st.markdown(f"""
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -326,7 +335,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# --- RENDERING UI VIEWS ---[cite: 2]
+# --- RENDERING UI VIEWS ---
 st.markdown("<h1 style='margin-bottom: 0px;'>Ireland Visa Application Tracking</h1>", unsafe_allow_html=True)
 st.markdown("<div class='branding-subheading'>Built with precision by <a href='https://www.sushantthorat.com/' target='_blank'> Sushant Thorat</a></div>", unsafe_allow_html=True)
 st.markdown("<div class='quote-box'>\"Céad Míle Fáilte\" - A hundred thousand welcomes. Charting your pathway to the Emerald Isle.</div>", unsafe_allow_html=True)
@@ -341,14 +350,11 @@ if os.path.exists(MASTER_FILE) and master_base64:
     """, unsafe_allow_html=True)
 
 if df is not None and not df.empty:
-    # REMOVED st.form FOR DYNAMIC REACTION: Standard elements let us intercept clicks with live button spinners
     search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g., 12345678").strip()
     submit_button = st.button(label="Verify Application Status")
 
     if submit_button and search_query:
-        # Launching targeted reactive loader animation directly tied to processing click
         with st.spinner("⏳ Analyzing data registries..."):
-            # Instantaneous memory lookups take 0.001s, matching custom sleep parameters for visual loading flow
             ptime.sleep(1.2)
             match = df[df["application_number"] == search_query]
             
