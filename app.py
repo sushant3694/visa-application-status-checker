@@ -24,7 +24,7 @@ HEADERS = {
 }
 
 st.set_page_config(
-    page_title="Ireland Visa Tracking Portal",
+    page_title="Ireland Visa Status Tracking Portal",
     page_icon="🇮🇪",
     layout="centered"
 )
@@ -336,7 +336,7 @@ def get_production_dataset():
 # --- UI Header Content ---
 st.markdown(
     """
-    <h1 style='margin-bottom: 0px;'>Ireland Visa Application Tracking
+    <h1 style='margin-bottom: 0px;'>Ireland Visa Status Tracking
     </h1>
     """, 
     unsafe_allow_html=True
