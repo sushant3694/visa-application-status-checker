@@ -96,7 +96,6 @@ st.markdown(f"""
         visibility: hidden !important;
     }}
 
-    /* HIDES THE EMOTION-CACHE HEADER AND MAIN MENU DROPDOWNS */
     header, #MainMenu, .stAppHeader {{
         visibility: hidden !important;
         display: none !important;
