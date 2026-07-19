@@ -31,7 +31,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# Initialize deep session control tracking flags for cloud routing framework
+# Initialize session tracking states
 if "last_sync_date" not in st.session_state:
     st.session_state.last_sync_date = None
 if "app_loaded" not in st.session_state:
@@ -154,34 +154,35 @@ def load_cached_json():
             return pd.DataFrame(json.load(f))
     return None
 
-# --- STREAMLIT CLOUD GUARANTEED BOOT LOADER ---
+# --- FIX: FORCED RENDER LOADER PLATFORM ROUTE ---
 now = datetime.now()
 today_str = now.strftime("%Y-%m-%d")
 
-# Forces the cloud platform container to render a clean visual loader window space
 if not st.session_state.app_loaded:
-    with st.spinner("✨ Synchronizing processing ledgers and master data calculations..."):
-        start_time = ptime.time()
-        
-        # Check condition rules for the morning 11:05 AM sync window
-        sync_needed = not os.path.exists(JSON_FILE)
-        if not sync_needed and now.time() >= time(11, 5):
-            if st.session_state.last_sync_date != today_str:
-                file_date = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d")
-                if file_date != today_str:
-                    sync_needed = True
-
-        if sync_needed:
-            success = download_and_convert_production(today_str)
-            if success:
-                st.session_state.last_sync_date = today_str
-
-        # Enforce the specific loading window to ensure cloud visualization draws correctly
-        elapsed = ptime.time() - start_time
-        remaining = 5.0 - elapsed
-        if remaining > 0:
-            ptime.sleep(remaining)
+    # Use empty space placeholder container to block DOM caching
+    placeholder = st.empty()
+    with placeholder.container():
+        with st.spinner("✨ Synchronizing processing ledgers and master data calculations..."):
+            start_time = ptime.time()
             
+            sync_needed = not os.path.exists(JSON_FILE)
+            if not sync_needed and now.time() >= time(11, 5):
+                if st.session_state.last_sync_date != today_str:
+                    file_date = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d")
+                    if file_date != today_str:
+                        sync_needed = True
+
+            if sync_needed:
+                success = download_and_convert_production(today_str)
+                if success:
+                    st.session_state.last_sync_date = today_str
+
+            elapsed = ptime.time() - start_time
+            remaining = 5.0 - elapsed
+            if remaining > 0:
+                ptime.sleep(remaining)
+                
+    placeholder.empty() # Explicitly wipes out the loader container block
     st.session_state.app_loaded = True
     st.rerun()
 
@@ -354,6 +355,7 @@ if df is not None and not df.empty:
     submit_button = st.button(label="Verify Application Status")
 
     if submit_button and search_query:
+        # Spinner frame container for input entries
         with st.spinner("⏳ Analyzing data registries..."):
             ptime.sleep(1.2)
             match = df[df["application_number"] == search_query]
