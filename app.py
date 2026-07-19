@@ -93,6 +93,25 @@ st.markdown(f"""
         display: none !important;
         visibility: hidden !important;
     }}
+
+    /* HIDES THE EMOTION-CACHE HEADER AND MAIN MENU DROPDOWNS */
+    header, #MainMenu, .stAppHeader {{
+        visibility: hidden !important;
+        display: none !important;
+    }}
+
+    /* TARGETS AND ELIMINATES THE STREAMLIT CLOUD DEPLOY LINK */
+    a[href^="https://streamlit.io/cloud"], 
+    a[href*="streamlit.io"], 
+    .stAppDeployDropdown {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        width: 0 !important;
+        position: absolute !important;
+        pointer-events: none !important;
+    }}
     
     .branding-subheading {{
         text-align: center;
