@@ -365,7 +365,7 @@ if os.path.exists(MASTER_FILE):
     """, unsafe_allow_html=True)
 if df is not None and not df.empty:
     with st.form(key="search_form"):
-        search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g., 83362962").strip()
+        search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g., 12345678").strip()
         submit_button = st.form_submit_button(label="Verify Application Status")
 
     if submit_button and search_query:
