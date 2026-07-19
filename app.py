@@ -12,10 +12,12 @@ from datetime import datetime, time
 # Suppress insecure request warnings from using verify=False
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
 TARGET_URL = "https://www.ireland.ie/en/india/newdelhi/services/visas/processing-times-and-decisions/#visa-decisions"
 LOCAL_FILE = "visa_decisions_latest.ods"
 JSON_FILE = "visa_decisions.json"
 MASTER_FILE = "Visa_Decision_Comparison_Report.xlsx"
+IRELAND_FLAG_URL = "https://flagcdn.com/w80/ie.png"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -25,7 +27,7 @@ HEADERS = {
 
 st.set_page_config(
     page_title="Ireland Visa Status Tracking Portal",
-    page_icon="🇮🇪",
+    page_icon=IRELAND_FLAG_URL,
     layout="centered"
 )
 
