@@ -15,6 +15,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 TARGET_URL = "https://www.ireland.ie/en/india/newdelhi/services/visas/processing-times-and-decisions/#visa-decisions"
 LOCAL_FILE = "visa_decisions_latest.ods"
 JSON_FILE = "visa_decisions.json"
+MASTER_FILE = "Visa_Decision_Comparison_Report.xlsx"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -28,7 +29,6 @@ st.set_page_config(
     layout="centered"
 )
 
-# Safely encode background image to Base64
 def get_base64_image(image_path):
     if os.path.exists(image_path):
         with open(image_path, "rb") as img_file:
@@ -37,7 +37,16 @@ def get_base64_image(image_path):
 
 img_base64 = get_base64_image("background.avif")
 
-# Advanced UI injection: Smooth animations, tech-glow button, and footer styling
+# Safely encode the master excel report for the floating download layout link if it exists
+def get_base64_file(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return ""
+
+master_base64 = get_base64_file(MASTER_FILE)
+
+# Advanced UI injection: Floating anchors, clean fonts, global layout resets
 st.markdown(f"""
     <!-- Import Plus Jakarta Sans from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,18 +54,18 @@ st.markdown(f"""
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 
     <style>
-    /* Global Font & Smooth Fade-in Page Animation */
+    /* Absolute Global Font Override */
+    html, body, .stApp, div, span, p, h1, h2, h3, label, input, button, textarea, th, td {{
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }}
+    
     @keyframes fadeInPage {{
         from {{ opacity: 0; transform: translateY(15px); }}
         to {{ opacity: 1; transform: translateY(0); }}
     }}
     
-    html, body, [class*="css"], .stApp {{
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-    }}
-    
     .stApp {{
-        background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(0, 0, 0, 0.92)), 
+        background: linear-gradient(rgba(23, 23, 23, 0.92), rgba(0, 0, 0, 0.92)), 
                     url("data:image/avif;base64,{img_base64}");
         background-size: cover;
         background-position: center;
@@ -64,10 +73,11 @@ st.markdown(f"""
         animation: fadeInPage 0.8s ease-out forwards;
     }}
     
-    /* Default Desktop Typography & Layout spacing */
+    /* Default Desktop Layout Settings */
     .block-container {{
         padding-left: 2rem !important;
         padding-right: 2rem !important;
+        position: relative;
     }}
     
     h1 {{
@@ -76,21 +86,54 @@ st.markdown(f"""
         text-align: center;
         letter-spacing: -0.5px;
         font-size: 2.5rem;
+        margin-bottom: 5px !important;
+    }}
+
+    h1 span {{
+        display: none !important;
+        visibility: hidden !important;
+    }}
+    
+    .branding-subheading {{
+        text-align: center;
+        margin-top: 0px;
+        margin-bottom: 20px;
+        font-size: 1rem;
+        color: #fff;
+        font-weight: 500;
+    }}
+    
+    .branding-subheading a, .floating-download a {{
+        color: #007A4E !important;
+        text-decoration: none;
+        font-weight: 700;
+        transition: color 0.3s ease;
+    }}
+    
+    .branding-subheading a:hover, .floating-download a:hover {{
+        color: #FF883E !important;
+        text-decoration: underline;
+    }}
+    
+    /* Floating Link Top Right Setup Layer */
+    .floating-download {{
+        text-align:right;
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 10px;
     }}
     
     .quote-box {{
         text-align: center;
         font-style: italic;
-        color: #4A5568;
+        color: #fff;
         margin-bottom: 25px;
         font-size: 1.1rem;
         line-height: 1.6;
-        font-weight: 400;
     }}
     
     /* Catchy Modern Tech-Style Button Framework */
     div.stButton > button:first-child {{
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
         background: linear-gradient(135deg, #007A4E 0%, #00b371 100%) !important;
         color: white !important;
         border-radius: 6px;
@@ -110,44 +153,20 @@ st.markdown(f"""
         background: linear-gradient(135deg, #FF883E 0%, #ffaa6b 100%) !important;
         box-shadow: 0 8px 20px rgba(255, 136, 62, 0.4);
     }}
-    
-    div.stButton > button:first-child:active {{
-        transform: translateY(1px);
-    }}
-    
-    /* Input field text adjustment */
-    input {{
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-    }}
-    
-    .branding-footer {{
-        text-align: center;
-        margin-top: 50px;
-        padding: 20px;
-        font-size: 0.9rem;
-        color: #718096;
-        border-top: 1px solid rgba(0,0,0,0.05);
-        font-weight: 400;
-    }}
-    
-    .branding-footer a {{
-        color: #007A4E !important;
-        text-decoration: none;
-        font-weight: 700;
-        transition: color 0.3s ease;
-    }}
-    
-    .branding-footer a:hover {{
-        color: #FF883E !important;
-        text-decoration: underline;
-    }}
 
-    /* Mobile & Tablet Responsive Overrides */
+    /* Mobile & Tablet Responsive Layouts with Roomy Padding Configuration */
     @media (max-width: 768px) {{
         .block-container {{
-            padding-left: 0.75rem !important;
-            padding-right: 0.75rem !important;
-            padding-top: 2rem !important;
+            padding-left: 1.5rem !important;  /* Added extra cushion space to avoid crunching */
+            padding-right: 1.5rem !important;
+            padding-top: 4.5rem !important; /* Made space for the floating right link layer above the title */
+        }}
+        
+        .floating-download {{
+            top: 15px;
+            right: 1.5rem;
+            width: 100%;
+            text-align: right;
         }}
         
         h1 {{
@@ -155,37 +174,99 @@ st.markdown(f"""
             line-height: 1.3 !important;
         }}
         
+        .branding-subheading {{
+            font-size: 0.85rem !important;
+        }}
+        
         .quote-box {{
             font-size: 0.95rem !important;
             margin-bottom: 15px;
-            padding: 0 5px;
-        }}
-        
-        div.stButton > button:first-child {{
-            padding: 14px !important;
-            font-size: 0.95rem !important;
         }}
     }}
     </style>
 """, unsafe_allow_html=True)
+
+
 
 def fetch_latest_ods_url():
     try:
         response = requests.get(TARGET_URL, headers=HEADERS, timeout=15, verify=False)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
-        
         for link in soup.find_all('a', href=True):
             if link['href'].endswith('.ods'):
                 url = link['href']
-                if url.startswith('/'):
-                    url = "https://www.ireland.ie" + url
-                return url
+                return "https://www.ireland.ie" + url if url.startswith('/') else url
     except Exception:
         pass
     return None
 
-@st.cache_data(ttl=3600)
+def update_master_report(current_records, report_date, filename):
+    """Executes the standard chronological dataset delta update matching algorithms[cite: 3]."""
+    if os.path.exists(MASTER_FILE):
+        all_apps = pd.read_excel(MASTER_FILE, sheet_name="All Applications").astype(str)
+        records_by_date = pd.read_excel(MASTER_FILE, sheet_name="New Records By Date").astype(str)
+        daily_summary = pd.read_excel(MASTER_FILE, sheet_name="Daily Summary").astype(str)
+        status_changes = pd.read_excel(MASTER_FILE, sheet_name="Status Changes").astype(str)
+    else:
+        all_apps = pd.DataFrame(columns=["Application Number", "Current Status", "Date First Added", "Initial Status", "Last Seen Date", "First Found File", "Last Seen File"])
+        records_by_date = pd.DataFrame(columns=["Application Number", "Status", "Date Added", "First Found File"])
+        daily_summary = pd.DataFrame(columns=["Report Date", "File Name", "Total Records In Report", "New Records Added", "New Approved", "New Refused", "New Other Status", "Status Changes", "Previous Report Date", "Previous Report File"])
+        status_changes = pd.DataFrame(columns=["Application Number", "Previous Status", "New Status", "Status Changed Date", "Report File"])
+
+    if report_date in daily_summary["Report Date"].values:
+        return
+
+    prev_known = dict(zip(all_apps["Application Number"], all_apps["Current Status"]))
+    first_seen = dict(zip(all_apps["Application Number"], all_apps.to_dict(orient="records")))
+
+    new_approved, new_refused, new_other, status_change_count = 0, 0, 0, 0
+    latest_new_records = []
+
+    for app_num, current_status in current_records.items():
+        if app_num not in first_seen:
+            first_seen[app_num] = {
+                "Application Number": app_num, "Current Status": current_status, "Date First Added": report_date,
+                "Initial Status": current_status, "Last Seen Date": report_date, "First Found File": filename, "Last Seen File": filename
+            }
+            latest_new_records.append({"Application Number": app_num, "Status": current_status, "Date Added": report_date, "First Found File": filename})
+            
+            if current_status == "Approved": new_approved += 1
+            elif current_status == "Refused": new_refused += 1
+            else: new_other += 1
+        else:
+            first_seen[app_num]["Current Status"] = current_status
+            first_seen[app_num]["Last Seen Date"] = report_date
+            first_seen[app_num]["Last Seen File"] = filename
+
+        old_status = prev_known.get(app_num)
+        if old_status and old_status != current_status:
+            new_change = {"Application Number": app_num, "Previous Status": old_status, "New Status": current_status, "Status Changed Date": report_date, "Report File": filename}
+            status_changes = pd.concat([status_changes, pd.DataFrame([new_change])], ignore_index=True)
+            status_change_count += 1
+
+    new_records_count = len(latest_new_records)
+    if latest_new_records:
+        records_by_date = pd.concat([records_by_date, pd.DataFrame(latest_new_records)], ignore_index=True)
+
+    prev_report_date = daily_summary.iloc[-1]["Report Date"] if not daily_summary.empty else ""
+    prev_report_file = daily_summary.iloc[-1]["File Name"] if not daily_summary.empty else ""
+    
+    new_summary = {
+        "Report Date": report_date, "File Name": filename, "Total Records In Report": len(current_records),
+        "New Records Added": new_records_count, "New Approved": new_approved, "New Refused": new_refused,
+        "New Other Status": new_other, "Status Changes": status_change_count, "Previous Report Date": prev_report_date, "Previous Report File": prev_report_file
+    }
+    daily_summary = pd.concat([daily_summary, pd.DataFrame([new_summary])], ignore_index=True)
+    all_apps = pd.DataFrame(list(first_seen.values()))
+
+    with pd.ExcelWriter(MASTER_FILE, engine="openpyxl") as writer:
+        pd.DataFrame(latest_new_records).to_excel(writer, sheet_name="Latest New Records", index=False)
+        all_apps.to_excel(writer, sheet_name="All Applications", index=False)
+        records_by_date.to_excel(writer, sheet_name="New Records By Date", index=False)
+        daily_summary.to_excel(writer, sheet_name="Daily Summary", index=False)
+        status_changes.to_excel(writer, sheet_name="Status Changes", index=False)
+
 def download_and_convert_production(today_str):
     download_url = fetch_latest_ods_url()
     if download_url:
@@ -195,33 +276,22 @@ def download_and_convert_production(today_str):
             with open(LOCAL_FILE, 'wb') as f:
                 f.write(file_response.content)
             
-            df = pd.read_excel(LOCAL_FILE, engine='odf', header=None)
-            df = df.astype(str).replace(['nan', 'NaN', 'None'], '')
-            raw_rows = df.values.tolist()
-            
-            cleaned_records = []
-            for row in raw_rows:
+            df = pd.read_excel(LOCAL_FILE, engine='odf', header=None).astype(str).replace(['nan', 'NaN', 'None'], '')
+            cleaned_map = {}
+            for row in df.values.tolist():
                 cells = [str(cell).strip() for cell in row if str(cell).strip()]
-                app_num = None
-                decision = "Unknown"
-                
-                for cell in cells:
-                    if re.match(r'^\d{8}$', cell):
-                        app_num = cell
-                        break
-                
+                app_num = next((c for c in cells if re.match(r'^\d{8}$', c)), None)
                 if app_num:
                     other_cells = [c for c in cells if c != app_num]
-                    if other_cells:
-                        decision = other_cells[-1]
-                    
-                    cleaned_records.append({
-                        "application_number": app_num,
-                        "decision_status": decision
-                    })
+                    decision = "Refused" if any(x in "".join(other_cells).lower() for x in ["refus", "reject", "deni"]) else "Approved"
+                    cleaned_map[app_num] = decision
             
+            records = [{"application_number": k, "decision_status": v} for k, v in cleaned_map.items()]
             with open(JSON_FILE, 'w', encoding='utf-8') as f:
-                json.dump(cleaned_records, f, ensure_ascii=False, indent=4)
+                json.dump(records, f, ensure_ascii=False, indent=4)
+
+            filename_stamp = f"{today_str.replace('-', '')}_NDVO_Visa_Decisions.ods"
+            update_master_report(cleaned_map, today_str, filename_stamp)
             return True
         except Exception:
             pass
@@ -230,69 +300,68 @@ def download_and_convert_production(today_str):
 def get_production_dataset():
     now = datetime.now()
     today_str = now.strftime("%Y-%m-%d")
-    json_exists = os.path.exists(JSON_FILE)
-    
-    should_download = False
-    if not json_exists:
-        should_download = True
-    elif now.time() >= time(11, 5):
-        last_modified_date = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d")
-        if last_modified_date != today_str:
-            should_download = True
-            
-    if should_download:
-        with st.spinner("✨ 'The future belongs to those who believe in the beauty of their dreams.' — Synchronizing current processing ledger..."):
+    if not os.path.exists(JSON_FILE) or (now.time() >= time(11, 5) and datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d") != today_str):
+        with st.spinner("✨ Synchronizing processing ledgers..."):
             download_and_convert_production(today_str)
             
     if os.path.exists(JSON_FILE):
-        try:
-            with open(JSON_FILE, 'r', encoding='utf-8') as f:
-                return pd.DataFrame(json.load(f))
-        except Exception:
-            return None
+        with open(JSON_FILE, 'r', encoding='utf-8') as f:
+            return pd.DataFrame(json.load(f))
     return None
 
 # --- UI Header Content ---
-st.title("Ireland Visa Application Tracking System")
-st.markdown("<div class='quote-box'>\"Céad Míle Fáilte\"- A hundred thousand welcomes. Charting your pathway to the Emerald Isle.</div>", unsafe_allow_html=True)
+st.markdown(
+    """
+    <h1 style='margin-bottom: 0px;'>Ireland Visa Application Tracking
+    </h1>
+    """, 
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <div class='branding-subheading'>
+        Built with precision by <a href='https://www.sushantthorat.com/' target='_blank'> Sushant Thorat</a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown("<div class='quote-box'>\"Céad Míle Fáilte\" - A hundred thousand welcomes. Charting your pathway to the Emerald Isle.</div>", unsafe_allow_html=True)
 
 df = get_production_dataset()
-
+# Inject the pure floating HTML text anchor cleanly if the file is generated
+if os.path.exists(MASTER_FILE):
+    st.markdown(f"""
+        <div class="floating-download">
+            <a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{master_base64}" download="Visa_Decision_Comparison_Report.xlsx">
+                Download Master Report
+            </a>
+        </div>
+    """, unsafe_allow_html=True)
 if df is not None and not df.empty:
     with st.form(key="search_form"):
-        search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g., 12345678").strip()
-        submit_button = st.form_submit_button(label="Verify")
+        search_query = st.text_input("Enter Your 8-Digit Application Number:", placeholder="e.g., 83362962").strip()
+        submit_button = st.form_submit_button(label="Verify Application Status")
 
     if submit_button and search_query:
         match = df[df["application_number"] == search_query]
-        
         if not match.empty:
             app_id = str(match["application_number"].values[0])
             status = str(match["decision_status"].values[0]).strip()
-            status_lower = status.lower()
             
-            st.markdown("### Application Information Record")
             st.metric(label="Application Number Reference", value=app_id)
             
-            if "approve" in status_lower:
+            if "approve" in status.lower():
                 st.balloons()
-                st.success(f"🍏 **Status: {status}**\n\nCongratulations! Your application has been approved by the New Delhi Visa Office. Safe travels on your journey ahead!")
-            elif "refuse" in status_lower or "deny" in status_lower:
-                st.error(f"🚨 **Status: {status}**\n\nYour application has been returned with a refusal decision. Please coordinate directly with your visa processing handler for formal decision notifications and appeal parameters.")
+                st.success(f"🍏 **Status: Approved**\n\nCongratulations! Your application has been approved by the New Delhi Visa Office. Safe travels on your journey ahead!")
             else:
-                st.info(f"ℹ️ **Status: {status}**\n\nYour reference code was located with status flags: {status}.")
+                st.error(f"🚨 **Status: Refused**\n\nYour application has been returned with a refusal decision. Please coordinate directly with your visa processing handler.")
         else:
-            st.warning("⚠️ No current record found matching that Application Number. The decision ledger may still be pending updates or scheduling queues.")
+            st.warning("⚠️ No current record found matching that Application Number in today's batch updates.")
             
     st.markdown("---")
     last_update_ts = datetime.fromtimestamp(os.path.getmtime(JSON_FILE)).strftime("%Y-%m-%d %I:%M %p")
-    st.caption(f"Data Synced : {last_update_ts}")
+    st.caption(f"System Operational Ledger Cache Sync Frame: {last_update_ts}")
 else:
     st.error("Service Temporarily Unavailable: Local record registers are out of sync.")
-
-# --- Professional Marketing & Branding Signature Block ---
-st.markdown("""
-    <div class='branding-footer'>
-        Built with precision by <a href='https://www.sushantthorat.com/' target='_blank'>Sushant Thorat</a>
-    </div>
-""", unsafe_allow_html=True)
