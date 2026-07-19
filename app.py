@@ -89,7 +89,7 @@ st.markdown(f"""
         margin-bottom: 5px !important;
     }}
 
-    h1 span {{
+    h1 span:nth-of-type(2) {{
         display: none !important;
         visibility: hidden !important;
     }}
